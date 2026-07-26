@@ -14,17 +14,13 @@ const missing = Object.entries(env)
   .map(([key]) => key);
 
 if (missing.length > 0) {
-  throw new Error(
-    `Missing required environment variables:\n${missing.join("\n")}`
-  );
+  throw new Error(`Missing required environment variables:\n${missing.join("\n")}`);
 }
 
 const port = Number(env.PORT);
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
-  throw new Error(
-    "Invalid PORT. PORT must be an integer between 1 and 65535."
-  );
+  throw new Error("Invalid PORT. PORT must be an integer between 1 and 65535.");
 }
 
 const config = {
