@@ -5,10 +5,5 @@ export const getHealth = (req, res, next) => {
   //   uptime: process.uptime(),
   //   timestamp: new Date().toISOString(),
   // });
-
-  try {
-    throw new Error("Test Error");
-  } catch (err) {
-    next(err);
-  }
+  throw new Error("Test Error");
 };
