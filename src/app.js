@@ -1,5 +1,5 @@
 import express from "express";
-import healthRoutes from "./routes/health.routes.js";
+import healthRoutes from "./health/health.routes.js";
 import loggerMiddleware from "./middleware/logger.middleware.js";
 import notfoundMiddleware from "./middleware/notfound.middleware.js";
 import errorMiddleware from "./middleware/error.middleware.js";
