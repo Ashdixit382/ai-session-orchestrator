@@ -1,12 +1,20 @@
 import app from "./app.js";
+import config from "./config/index.js";
+import connectDB from "./database/connectDB.js";
 
-try {
-  const { default: config } = await import("./config/index.js");
+const startServer = async () => {
+  try {
+    await connectDB();
 
-  app.listen(config.port, () => {
-    console.log(`server is listening at Port ${config.port}`);
-  });
-} catch (err) {
-  console.log(err);
-  process.exit(1);
-}
+    app.listen(config.port, () => {
+      console.log(`Server is listening on port ${config.port}`);
+    });
+  } catch (error) {
+    console.error("Failed to start application");
+    console.error(error);
+
+    process.exit(1);
+  }
+};
+
+startServer();
