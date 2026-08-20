@@ -7,10 +7,12 @@ import authRoutes from "./auth/auth.route.js";
 
 const app = express();
 
+app.use(express.json());
+
 app.use(loggerMiddleware);
 
 app.use("/health", healthRoutes);
-app.use("/auth/register", authRoutes);
+app.use("/auth", authRoutes);
 
 // 404 Handler (must be last)
 app.use(notfoundMiddleware);
