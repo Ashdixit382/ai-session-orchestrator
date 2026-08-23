@@ -2,6 +2,7 @@ import User from "../users/users.model.js";
 import bcrypt from "bcrypt";
 import config from "../config/index.js";
 import jwt from "jsonwebtoken";
+import { AppError } from "../utils/AppError.js";
 
 export const registerUser = async (userData) => {
   // console.log(`${userData.email}  ${userData.password}`);
@@ -10,7 +11,7 @@ export const registerUser = async (userData) => {
   });
 
   if (existUser) {
-    throw new Error("User already exists");
+    throw new AppError("User Already Exists", 409);
   }
 
   const hashPassword = await bcrypt.hash(userData.password, config.bcryptSaltRounds);
@@ -30,19 +31,19 @@ export const loginUser = async (userData) => {
   }).select("+password");
 
   if (!existingUser) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password", 401);
   }
 
   const isPasswordValid = await bcrypt.compare(userData.password, existingUser.password);
 
   if (!isPasswordValid) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password", 401);
   }
 
   const userResponse = existingUser.toObject();
   delete userResponse.password;
 
-  const token = jwt.sign({ userId: userResponse._id }, config.jwtSecret, {
+  const token = jwt.sign({ userId: existingUser._id }, config.jwtSecret, {
     expiresIn: config.jwtExpiresIn,
   });
 
