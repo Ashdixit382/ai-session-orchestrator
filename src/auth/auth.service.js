@@ -1,8 +1,9 @@
-import User from "../users/users.model.js";
+import User from "../users/user.model.js";
 import bcrypt from "bcrypt";
 import config from "../config/index.js";
 import jwt from "jsonwebtoken";
 import { AppError } from "../utils/AppError.js";
+import { createRefreshToken, revokeRefreshToken } from "./refreshToken.service.js";
 
 export const registerUser = async (userData) => {
   // console.log(`${userData.email}  ${userData.password}`);
@@ -43,12 +44,19 @@ export const loginUser = async (userData) => {
   const userResponse = existingUser.toObject();
   delete userResponse.password;
 
-  const token = jwt.sign({ userId: existingUser._id }, config.jwtSecret, {
+  const accessToken = jwt.sign({ userId: existingUser._id }, config.jwtSecret, {
     expiresIn: config.jwtExpiresIn,
   });
 
+  const refreshToken = await createRefreshToken(userResponse._id);
+
   return {
     user: userResponse,
-    token,
+    accessToken,
+    refreshToken,
   };
+};
+
+export const logoutUser = async (refreshToken) => {
+  await revokeRefreshToken(refreshToken);
 };

@@ -9,6 +9,7 @@ const env = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   BCRYPT_SALT_ROUNDS: process.env.BCRYPT_SALT_ROUNDS,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
+  REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN,
 };
 
 const missing = Object.entries(env)
@@ -21,6 +22,7 @@ if (missing.length > 0) {
 
 const port = Number(env.PORT);
 const bcryptSaltRounds = Number(env.BCRYPT_SALT_ROUNDS);
+const refreshTokenExpiresIn = Number(env.REFRESH_TOKEN_EXPIRES_IN);
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new Error("Invalid PORT. PORT must be an integer between 1 and 65535.");
@@ -33,6 +35,7 @@ const config = {
   openAIApiKey: env.OPENAI_API_KEY,
   bcryptSaltRounds,
   jwtExpiresIn: env.JWT_EXPIRES_IN,
+  refreshTokenExpiresIn,
 };
 
 export default config;
