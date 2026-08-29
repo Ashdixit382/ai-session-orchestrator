@@ -23,7 +23,7 @@ export const authorizeUser = (req, res, next) => {
     };
 
     next();
-  } catch (error){
+  } catch (error) {
     return next(new AppError("Invalid or expired token", 401));
   }
 };

@@ -15,6 +15,7 @@ import {
   createMessageController,
   getMessageController,
   updateMessageController,
+  sendMessageController,
 } from "../message/message.controller.js";
 
 const router = Router();
@@ -40,7 +41,7 @@ router.post(
   "/:conversationId/messages",
   authorizeUser,
   validate(createMessageSchema),
-  asyncHandler(createMessageController),
+  asyncHandler(sendMessageController),
 );
 
 router.get("/:conversationId/messages", authorizeUser, asyncHandler(getMessageController));

@@ -1,6 +1,31 @@
 import Message from "./message.model.js";
 import Conversation from "../conversations/conversation.model.js";
 import { AppError } from "../utils/AppError.js";
+import { generateAIResponse } from "../ai/ai.service.js";
+
+export const sendMessage = async (userId, conversationId, messageData) => {
+  const conversation = await Conversation.findOne({
+    _id: conversationId,
+    user: userId,
+  });
+
+  if (!conversation) {
+    throw new AppError("Conversation not found", 404);
+  }
+
+  const userMessage = await Message.create({
+    conversation: conversationId,
+    role: "user",
+    content: messageData.content,
+  });
+
+  const assistantMessage = await generateAIResponse(userId, conversationId);
+
+  return {
+    userMessage,
+    assistantMessage,
+  };
+};
 
 export const createMessage = async (userId, conversationId, messageData) => {
   const conversation = await Conversation.findOne({

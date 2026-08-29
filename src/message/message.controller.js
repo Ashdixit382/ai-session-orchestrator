@@ -1,10 +1,22 @@
-import { createMessage, getMessage, updateMessage } from "./message.service.js";
+import { createMessage, getMessage, updateMessage, sendMessage } from "./message.service.js";
 
 export const createMessageController = async (req, res) => {
   const userId = req.user.userId;
   const { conversationId } = req.params;
 
   const data = await createMessage(userId, conversationId, req.body);
+
+  return res.status(201).json({
+    success: true,
+    data,
+  });
+};
+
+export const sendMessageController = async (req, res) => {
+  const userId = req.user.userId;
+  const { conversationId } = req.params;
+
+  const data = await sendMessage(userId, conversationId, req.body);
 
   return res.status(201).json({
     success: true,
