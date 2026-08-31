@@ -10,6 +10,8 @@ const env = {
   BCRYPT_SALT_ROUNDS: process.env.BCRYPT_SALT_ROUNDS,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN,
+  AI_PROVIDER: process.env.AI_PROVIDER,
+  AI_SYSTEM_PROMPT: process.env.AI_SYSTEM_PROMPT,
 };
 
 const missing = Object.entries(env)
@@ -36,6 +38,8 @@ const config = {
   bcryptSaltRounds,
   jwtExpiresIn: env.JWT_EXPIRES_IN,
   refreshTokenExpiresIn,
+  aiProvider: env.AI_PROVIDER,
+  aiSystemPrompt: env.AI_SYSTEM_PROMPT,
 };
 
 export default config;

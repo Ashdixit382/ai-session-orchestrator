@@ -2,6 +2,8 @@ import Conversation from "../conversations/conversation.model.js";
 import { AppError } from "../utils/AppError.js";
 import Message from "../message/message.model.js";
 import { getAIProvider } from "../provider/provider.factory.js";
+import config from "../config/index.js";
+import { buildConversationContext } from "./context.service.js";
 
 export const generateAIResponse = async (userId, conversationId) => {
   const exist = await Conversation.findOne({
@@ -13,18 +15,9 @@ export const generateAIResponse = async (userId, conversationId) => {
     throw new AppError("Conversation not found", 404);
   }
 
-  const messages = await Message.find({
-    conversation: conversationId,
-  }).sort({
-    createdAt: 1,
-  });
+  const providerMessages = await buildConversationContext(conversationId);
 
-  const providerMessages = messages.map((message) => ({
-    role: message.role,
-    content: message.content,
-  }));
-
-  const provider = getAIProvider("openai");
+  const provider = getAIProvider(config.aiProvider);
 
   const response = await provider.generateResponse(providerMessages);
 

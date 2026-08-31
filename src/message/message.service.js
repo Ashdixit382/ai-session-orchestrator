@@ -19,12 +19,18 @@ export const sendMessage = async (userId, conversationId, messageData) => {
     content: messageData.content,
   });
 
-  const assistantMessage = await generateAIResponse(userId, conversationId);
+  try {
+    const assistantMessage = await generateAIResponse(userId, conversationId);
 
-  return {
-    userMessage,
-    assistantMessage,
-  };
+    return {
+      userMessage,
+      assistantMessage,
+    };
+  } catch (error) {
+    await userMessage.deleteOne();
+
+    throw error;
+  }
 };
 
 export const createMessage = async (userId, conversationId, messageData) => {

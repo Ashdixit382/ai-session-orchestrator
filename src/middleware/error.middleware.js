@@ -1,3 +1,4 @@
+import { AIProviderError } from "../provider/provider.error.js";
 import { AppError } from "../utils/AppError.js";
 
 const errorMiddleware = (err, req, res, next) => {
@@ -16,9 +17,19 @@ const errorMiddleware = (err, req, res, next) => {
     });
   }
 
+  if (err instanceof AIProviderError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+      provider: err.provider,
+    });
+  }
+
+  console.error(err);
+
   return res.status(500).json({
     success: false,
-    message: err.message,
+    message: "Internal Server Error",
   });
 };
 
