@@ -1,7 +1,7 @@
 import Message from "./message.model.js";
 import Conversation from "../conversations/conversation.model.js";
 import { AppError } from "../utils/AppError.js";
-import { generateAIResponse } from "../ai/ai.service.js";
+import { generateAIResponse, generateConversationTitle } from "../ai/ai.service.js";
 
 export const sendMessage = async (userId, conversationId, messageData) => {
   const conversation = await Conversation.findOne({
@@ -13,6 +13,12 @@ export const sendMessage = async (userId, conversationId, messageData) => {
     throw new AppError("Conversation not found", 404);
   }
 
+  const messageCount = await Message.countDocuments({
+    conversation: conversationId,
+  });
+
+  const isFirstMessage = messageCount === 0;
+
   const userMessage = await Message.create({
     conversation: conversationId,
     role: "user",
@@ -20,6 +26,18 @@ export const sendMessage = async (userId, conversationId, messageData) => {
   });
 
   try {
+    if (isFirstMessage) {
+      try {
+        const title = await generateConversationTitle(messageData.content);
+
+        conversation.title = title;
+      } catch (error) {
+        conversation.title = messageData.content.slice(0, 50);
+      }
+
+      await conversation.save();
+    }
+
     const assistantMessage = await generateAIResponse(userId, conversationId);
 
     return {

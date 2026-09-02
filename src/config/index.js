@@ -12,6 +12,7 @@ const env = {
   REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN,
   AI_PROVIDER: process.env.AI_PROVIDER,
   AI_SYSTEM_PROMPT: process.env.AI_SYSTEM_PROMPT,
+  AI_CONTEXT_MESSAGE_LIMIT: process.env.AI_CONTEXT_MESSAGE_LIMIT,
 };
 
 const missing = Object.entries(env)
@@ -25,6 +26,7 @@ if (missing.length > 0) {
 const port = Number(env.PORT);
 const bcryptSaltRounds = Number(env.BCRYPT_SALT_ROUNDS);
 const refreshTokenExpiresIn = Number(env.REFRESH_TOKEN_EXPIRES_IN);
+const aiContextMessageLimit = Number(env.AI_CONTEXT_MESSAGE_LIMIT);
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new Error("Invalid PORT. PORT must be an integer between 1 and 65535.");
@@ -38,8 +40,9 @@ const config = {
   bcryptSaltRounds,
   jwtExpiresIn: env.JWT_EXPIRES_IN,
   refreshTokenExpiresIn,
-  aiProvider: env.AI_PROVIDER,
+  aiProvider: env.AI_PROVIDER || "mock",
   aiSystemPrompt: env.AI_SYSTEM_PROMPT,
+  aiContextMessageLimit,
 };
 
 export default config;

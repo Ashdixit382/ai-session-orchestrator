@@ -1,17 +1,21 @@
 import Message from "../message/message.model.js";
+import config from "../config/index.js";
 
 export const buildConversationContext = async (conversationId) => {
   const messages = await Message.find({
     conversation: conversationId,
-  }).sort({
-    createdAt: 1,
-  });
+  })
+    .sort({
+      createdAt: -1,
+    })
+    .limit(config.aiContextMessageLimit);
+  
 
+  messages.reverse();
   return [
     {
       role: "system",
-      content:
-        "You are a helpful software engineering assistant. Give clear, accurate, and concise answers.",
+      content: config.aiSystemPrompt,
     },
 
     ...messages.map((message) => ({

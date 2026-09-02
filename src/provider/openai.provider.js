@@ -24,4 +24,27 @@ export class OpenAIProvider extends AIProvider {
       throw new AIProviderError("AI provider request failed", "openai", 502);
     }
   }
+
+  async generateTitle(content) {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Generate a short conversation title. Return only the title, with no quotes or explanation.",
+          },
+          {
+            role: "user",
+            content,
+          },
+        ],
+      });
+
+      return response.choices[0].message;
+    } catch (error) {
+      throw new AIProviderError("AI provider request failed", "openai", 502);
+    }
+  }
 }
