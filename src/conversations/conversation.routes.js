@@ -18,6 +18,8 @@ import {
   sendMessageController,
 } from "../message/message.controller.js";
 
+import { aiRateLimiter } from "../middleware/rateLimit.middleware.js";
+
 const router = Router();
 
 router.post(
@@ -40,6 +42,7 @@ router.delete("/:conversationId", authorizeUser, asyncHandler(deleteConversation
 router.post(
   "/:conversationId/messages",
   authorizeUser,
+  aiRateLimiter,
   validate(createMessageSchema),
   asyncHandler(sendMessageController),
 );

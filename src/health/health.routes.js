@@ -1,9 +1,10 @@
-import { getHealth } from "../health/health.controller.js";
+import { healthCheck, readinessCheck } from "../health/health.controller.js";
 import { Router } from "express";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const router = Router();
 
-router.get("/", asyncHandler(getHealth));
+router.get("/health", asyncHandler(healthCheck));
+router.get("/ready", asyncHandler(readinessCheck));
 
 export default router;

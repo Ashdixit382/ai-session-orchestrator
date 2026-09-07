@@ -13,6 +13,9 @@ const env = {
   AI_PROVIDER: process.env.AI_PROVIDER,
   AI_SYSTEM_PROMPT: process.env.AI_SYSTEM_PROMPT,
   AI_CONTEXT_MESSAGE_LIMIT: process.env.AI_CONTEXT_MESSAGE_LIMIT,
+  CLIENT_URL: process.env.CLIENT_URL,
+  LOG_LEVEL: process.env.LOG_LEVEL,
+  REDIS_URL: process.env.REDIS_URL,
 };
 
 const missing = Object.entries(env)
@@ -43,6 +46,9 @@ const config = {
   aiProvider: env.AI_PROVIDER || "mock",
   aiSystemPrompt: env.AI_SYSTEM_PROMPT,
   aiContextMessageLimit,
+  clientUrl: env.CLIENT_URL,
+  logLevel: env.LOG_LEVEL,
+  redisUrl: env.REDIS_URL,
 };
 
 export default config;
