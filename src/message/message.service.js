@@ -2,6 +2,7 @@ import Message from "./message.model.js";
 import Conversation from "../conversations/conversation.model.js";
 import { AppError } from "../utils/AppError.js";
 import { generateAIResponse, generateConversationTitle } from "../ai/ai.service.js";
+import conversationQueue from "../jobs/queues/conversation.queue.js";
 
 export const sendMessage = async (userId, conversationId, messageData) => {
   const conversation = await Conversation.findOne({
@@ -27,15 +28,30 @@ export const sendMessage = async (userId, conversationId, messageData) => {
 
   try {
     if (isFirstMessage) {
-      try {
-        const title = await generateConversationTitle(messageData.content);
-
-        conversation.title = title;
-      } catch (error) {
-        conversation.title = messageData.content.slice(0, 50);
-      }
-
-      await conversation.save();
+      await conversationQueue.add(
+        "generate-title",
+        {
+          conversationId: conversation._id.toString(),
+          content: messageData.content,
+          userId: userId.toString(),
+        },
+        {
+          jobId: `title-${conversation._id}`,
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 1000,
+          },
+          removeOnComplete: {
+            age: 3600,
+            count: 1000,
+          },
+          removeOnFail: {
+            age: 86400,
+            count: 5000,
+          },
+        },
+      );
     }
 
     const assistantMessage = await generateAIResponse(userId, conversationId);
