@@ -15,8 +15,13 @@ export const createMessageController = async (req, res) => {
 export const sendMessageController = async (req, res) => {
   const userId = req.user.userId;
   const { conversationId } = req.params;
+  const io = req.app.get("io");
 
   const data = await sendMessage(userId, conversationId, req.body);
+
+  io.to(`conversation:${conversationId}`).emit("message:new", data.userMessage);
+
+  io.to(`conversation:${conversationId}`).emit("ai:response", data.assistantMessage);
 
   return res.status(201).json({
     success: true,

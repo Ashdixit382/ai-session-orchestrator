@@ -1,6 +1,5 @@
-import jwt from "jsonwebtoken";
-import config from "../config/index.js";
 import { AppError } from "../utils/AppError.js";
+import { verifyAccessToken } from "../utils/jwt.js";
 
 export const authorizeUser = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -16,7 +15,7 @@ export const authorizeUser = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, config.jwtSecret);
+    const decoded = verifyAccessToken(token);
 
     req.user = {
       userId: decoded.userId,
