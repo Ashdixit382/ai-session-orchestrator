@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "worker": "nodemon src/workers/worker.js"
+    "titleworker": "nodemon src/workers/conversationTitle.worker.js",
+    "worker:ai": "nodemon src/workers/ai.worker.js"
   },
   "author": "",
   "license": "ISC",

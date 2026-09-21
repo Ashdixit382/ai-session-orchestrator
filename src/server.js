@@ -8,6 +8,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { verifyAccessToken } from "./utils/jwt.js";
 import Conversation from "./conversations/conversation.model.js";
+import { subscribeToRealtimeEvents } from "./realtime/realtime.subscriber.js";
 
 const startServer = async () => {
   try {
@@ -27,6 +28,12 @@ const startServer = async () => {
     });
 
     app.set("io", io);
+
+    await subscribeToRealtimeEvents((event, data) => {
+      if (event === "ai:Response") {
+        io.to(`conversation:${data.conversationId}`).emit("ai:Response", data.message);
+      }
+    });
 
     io.use((socket, next) => {
       try {

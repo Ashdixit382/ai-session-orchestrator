@@ -4,9 +4,9 @@ import Message from "../message/message.model.js";
 import { getAIProvider } from "../provider/provider.factory.js";
 import config from "../config/index.js";
 import { buildConversationContext } from "./context.service.js";
-import {conversationTitleSchema} from "./ai.schema.js";
+import { conversationTitleSchema } from "./ai.schema.js";
 
-export const generateAIResponse = async (userId, conversationId) => {
+export const generateAIResponse = async (userId, conversationId, messageId) => {
   const exist = await Conversation.findOne({
     user: userId,
     _id: conversationId,
@@ -16,7 +16,7 @@ export const generateAIResponse = async (userId, conversationId) => {
     throw new AppError("Conversation not found", 404);
   }
 
-  const providerMessages = await buildConversationContext(conversationId);
+  const providerMessages = await buildConversationContext(conversationId, messageId);
 
   const provider = getAIProvider(config.aiProvider);
 

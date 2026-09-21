@@ -1,8 +1,11 @@
 import { Worker } from "bullmq";
 import { processConversationJob } from "../jobs/processors/conversation.processor.js";
 import logger from "../utils/logger.js";
+import connectDB from "../database/connectDB.js";
 
-const worker = new Worker("conversation", processConversationJob , {
+await connectDB();
+
+const worker = new Worker("conversation", processConversationJob, {
   connection: {
     host: "localhost",
     port: 6379,
@@ -10,7 +13,7 @@ const worker = new Worker("conversation", processConversationJob , {
   concurrency: 3,
 });
 
-worker.on("completed", (job) => {
+worker.on("completed", (job, result) => {
   logger.info(
     {
       jobId: job.id,
@@ -19,6 +22,8 @@ worker.on("completed", (job) => {
     },
     "Background job completed",
   );
+
+  console.log(result);
 });
 
 worker.on("failed", (job, error) => {

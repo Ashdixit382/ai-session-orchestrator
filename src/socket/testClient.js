@@ -20,7 +20,7 @@ socket.on("message:new", (data) => {
   console.log("New message:", data);
 });
 
-socket.on("ai:response", (data) => {
+socket.on("ai:Response", (data) => {
   console.log("New message:", data);
 });
 
