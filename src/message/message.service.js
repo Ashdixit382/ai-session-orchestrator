@@ -20,10 +20,28 @@ export const sendMessage = async (userId, conversationId, messageData) => {
 
   const isFirstMessage = messageCount === 0;
 
+  const updatedConversation = await Conversation.findOneAndUpdate(
+    {
+      _id: conversationId,
+      user: userId,
+    },
+    {
+      $inc: {
+        messageSequence: 1,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  const sequence = updatedConversation.messageSequence;
+
   const userMessage = await Message.create({
     conversation: conversationId,
     role: "user",
     content: messageData.content,
+    sequence,
   });
 
   try {
@@ -60,10 +78,11 @@ export const sendMessage = async (userId, conversationId, messageData) => {
         conversationId: conversation._id.toString(),
         userId: userId.toString(),
         messageId: userMessage._id.toString(),
+        sequence,
       },
       {
         jobId: `ai-response-${userMessage._id}`,
-        attempts: 3,
+        attempts: 10,
         backoff: {
           type: "exponential",
           delay: 1000,

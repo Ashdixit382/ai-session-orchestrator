@@ -12,6 +12,14 @@ const conversationSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    messageSequence: {
+      type: Number,
+      default: 0,
+    },
+    processedSequence: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );

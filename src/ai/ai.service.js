@@ -16,19 +16,46 @@ export const generateAIResponse = async (userId, conversationId, messageId) => {
     throw new AppError("Conversation not found", 404);
   }
 
+  const existingAssistantMessage = await Message.findOne({
+    conversation: conversationId,
+    role: "assistant",
+    replyToMessage: messageId,
+  });
+
+  if (existingAssistantMessage) {
+    return existingAssistantMessage;
+  }
+
   const providerMessages = await buildConversationContext(conversationId, messageId);
 
   const provider = getAIProvider(config.aiProvider);
 
   const response = await provider.generateResponse(providerMessages);
 
-  const assistantMessage = await Message.create({
-    conversation: conversationId,
-    role: "assistant",
-    content: response.content,
-  });
+  try {
+    const assistantMessage = await Message.create({
+      conversation: conversationId,
+      role: "assistant",
+      content: response.content,
+      replyToMessage: messageId,
+    });
 
-  return assistantMessage;
+    return assistantMessage;
+  } catch (error) {
+    if (error.code === 11000) {
+      const existingAssistantMessage = await Message.findOne({
+        conversation: conversationId,
+        role: "assistant",
+        replyToMessage: messageId,
+      });
+
+      if (existingAssistantMessage) {
+        return existingAssistantMessage;
+      }
+    }
+
+    throw error;
+  }
 };
 
 export const generateConversationTitle = async (content) => {
