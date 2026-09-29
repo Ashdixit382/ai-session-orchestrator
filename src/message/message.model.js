@@ -31,7 +31,9 @@ const messageSchema = new mongoose.Schema(
     aiStatus: {
       type: String,
       enum: ["pending", "completed", "failed"],
-      default: "pending",
+      default: function () {
+        return this.role === "user" ? "pending" : undefined;
+      },
     },
   },
   { timestamps: true },

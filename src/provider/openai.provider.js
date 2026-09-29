@@ -3,6 +3,20 @@ import { AIProvider } from "./provider.interface.js";
 import config from "../config/index.js";
 import { AIProviderError } from "./provider.error.js";
 
+const isRetryableOpenAIError = (error) => {
+  const status = error?.status;
+
+  if ([429, 500, 502, 503, 504].includes(status)) {
+    return true;
+  }
+
+  if (!status) {
+    return true;
+  }
+
+  return false;
+};
+
 export class OpenAIProvider extends AIProvider {
   constructor() {
     super();
@@ -21,7 +35,12 @@ export class OpenAIProvider extends AIProvider {
 
       return response.choices[0].message;
     } catch (error) {
-      throw new AIProviderError("AI provider request failed", "openai", 502);
+      throw new AIProviderError(
+        "AI provider request failed",
+        "openai",
+        error?.status ?? 502,
+        isRetryableOpenAIError(error),
+      );
     }
   }
 
@@ -44,7 +63,12 @@ export class OpenAIProvider extends AIProvider {
 
       return response.choices[0].message;
     } catch (error) {
-      throw new AIProviderError("AI provider request failed", "openai", 502);
+      throw new AIProviderError(
+        "AI provider request failed",
+        "openai",
+        error?.status ?? 502,
+        isRetryableOpenAIError(error),
+      );
     }
   }
 }

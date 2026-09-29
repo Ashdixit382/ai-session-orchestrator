@@ -1,4 +1,8 @@
 import { createMessage, getMessage, updateMessage, sendMessage } from "./message.service.js";
+import { publishRealtimeEvent } from "../realtime/realtime.publisher.js";
+import { sendMessageSchema } from "./message.schema.js";
+import { AppError } from "../utils/AppError.js";
+import { isValidObjectId } from "../utils/validators.js";
 
 export const createMessageController = async (req, res) => {
   const userId = req.user.userId;
@@ -15,11 +19,23 @@ export const createMessageController = async (req, res) => {
 export const sendMessageController = async (req, res) => {
   const userId = req.user.userId;
   const { conversationId } = req.params;
-  const io = req.app.get("io");
 
-  const data = await sendMessage(userId, conversationId, req.body);
+  if (!isValidObjectId(conversationId)) {
+    throw new AppError("Invalid conversation ID", 400);
+  }
 
-  io.to(`conversation:${conversationId}`).emit("message:new", data.userMessage);
+  const result = sendMessageSchema.safeParse(req.body);
+
+  if (!result.success) {
+    throw new AppError(result.error.issues[0].message, 400);
+  }
+
+  const data = await sendMessage(userId, conversationId, result.data);
+
+  await publishRealtimeEvent("message:new", {
+    conversationId,
+    message: data.userMessage,
+  });
 
   return res.status(201).json({
     success: true,
@@ -31,7 +47,15 @@ export const getMessageController = async (req, res) => {
   const userId = req.user.userId;
   const { conversationId } = req.params;
 
-  const data = await getMessage(userId, conversationId);
+  if (!isValidObjectId(conversationId)) {
+    throw new AppError("Invalid conversation ID", 400);
+  }
+
+  const { limit = 20, cursor } = req.query;
+
+  const parsedLimit = Math.min(Math.max(Number(limit) || 20, 1), 100);
+
+  const data = await getMessage(userId, conversationId, parsedLimit, cursor);
 
   return res.status(200).json({
     success: true,

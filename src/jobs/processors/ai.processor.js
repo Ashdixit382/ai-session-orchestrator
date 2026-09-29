@@ -1,16 +1,17 @@
 import { generateAIResponse } from "../../ai/ai.service.js";
 import { publishRealtimeEvent } from "../../realtime/realtime.publisher.js";
-import { acquireLock, releaseLock } from "../../utils/distributedLock.js";
+import { acquireLock, releaseLock, renewLock } from "../../utils/distributedLock.js";
 import Conversation from "../../conversations/conversation.model.js";
-import { DelayedError } from "bullmq";
+import { DelayedError, UnrecoverableError } from "bullmq";
 import Message from "../../message/message.model.js";
+import { AIProviderError } from "../../provider/provider.error.js";
 
 export const processAIJob = async (job, token) => {
   const { userId, conversationId, messageId, sequence } = job.data;
 
   const lockKey = `ai:lock:conversation:${conversationId}`;
 
-  // 1. Check conversation first
+  // 1. Check conversation
   const conversation = await Conversation.findOne({
     _id: conversationId,
     user: userId,
@@ -27,7 +28,7 @@ export const processAIJob = async (job, token) => {
     throw new DelayedError();
   }
 
-  // 3. Now acquire the conversation lock
+  // 3. Acquire conversation lock
   const lockToken = await acquireLock(lockKey);
 
   if (!lockToken) {
@@ -36,15 +37,44 @@ export const processAIJob = async (job, token) => {
     throw new DelayedError();
   }
 
-  try {
-    const assistantMessage = await generateAIResponse(userId, conversationId, messageId);
+  // 4. Keep lock alive during long AI generation
+  const lockTtl = 30;
 
+  const renewalInterval = setInterval(async () => {
+    try {
+      const renewed = await renewLock(lockKey, lockToken, lockTtl);
+
+      if (renewed !== 1) {
+        console.error(`Failed to renew lock for conversation ${conversationId}`);
+      }
+    } catch (error) {
+      console.error(`Lock renewal error for conversation ${conversationId}:`, error);
+    }
+  }, 10_000);
+
+  try {
+    let assistantMessage;
+
+    try {
+      assistantMessage = await generateAIResponse(userId, conversationId, messageId, sequence);
+    } catch (error) {
+      // Permanent provider error → don't let BullMQ retry it
+      if (error instanceof AIProviderError && !error.retryable) {
+        throw new UnrecoverableError(error.message);
+      }
+
+      // Temporary provider error → BullMQ should retry
+      throw error;
+    }
+
+    // 5. Publish successful response
     await publishRealtimeEvent("ai:response", {
       conversationId,
       messageId: assistantMessage._id.toString(),
       message: assistantMessage,
     });
 
+    // 6. Mark user message as completed
     await Message.findOneAndUpdate(
       {
         _id: messageId,
@@ -58,6 +88,7 @@ export const processAIJob = async (job, token) => {
       },
     );
 
+    // 7. Advance processed sequence atomically
     const updatedConversation = await Conversation.findOneAndUpdate(
       {
         _id: conversationId,
@@ -84,7 +115,9 @@ export const processAIJob = async (job, token) => {
       messageId: assistantMessage._id.toString(),
     };
   } finally {
-    // 7. Always release Redis lock
+    // 8. Stop renewal and release lock
+    clearInterval(renewalInterval);
+
     await releaseLock(lockKey, lockToken);
   }
 };

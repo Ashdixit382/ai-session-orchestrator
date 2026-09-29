@@ -4,7 +4,7 @@ import config from "../config/index.js";
 const socket = io("http://localhost:3000", {
   auth: {
     token:
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTgyZGIyMDIxNWI5ODNhNjYxNDhlMTYiLCJpYXQiOjE3ODkzNjYzMTIsImV4cCI6MTc4OTQ1MjcxMn0.xEGyPaL_vU0pUWBPMHskrOs2QWSMo6pz_nWvvLLJ9XA",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTgyZGIyMDIxNWI5ODNhNjYxNDhlMTYiLCJpYXQiOjE3OTA0MDAwMzQsImV4cCI6MTc5MDQ4NjQzNH0.UFy-1Yz8CnVLrcLFSxdPq19b4x-sIUkMguNuCw40L-0",
   },
 });
 
@@ -20,8 +20,12 @@ socket.on("message:new", (data) => {
   console.log("New message:", data);
 });
 
-socket.on("ai:Response", (data) => {
+socket.on("ai:response", (data) => {
   console.log("New message:", data);
+});
+
+socket.on("ai:error", (data) => {
+  console.log("AI Error:", data);
 });
 
 socket.on("connect", () => {

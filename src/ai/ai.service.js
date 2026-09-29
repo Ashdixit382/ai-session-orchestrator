@@ -6,7 +6,7 @@ import config from "../config/index.js";
 import { buildConversationContext } from "./context.service.js";
 import { conversationTitleSchema } from "./ai.schema.js";
 
-export const generateAIResponse = async (userId, conversationId, messageId) => {
+export const generateAIResponse = async (userId, conversationId, messageId, sequence) => {
   const exist = await Conversation.findOne({
     user: userId,
     _id: conversationId,
@@ -38,6 +38,7 @@ export const generateAIResponse = async (userId, conversationId, messageId) => {
       role: "assistant",
       content: response.content,
       replyToMessage: messageId,
+      sequence,
     });
 
     return assistantMessage;

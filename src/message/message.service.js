@@ -82,7 +82,7 @@ export const sendMessage = async (userId, conversationId, messageData) => {
       },
       {
         jobId: `ai-response-${userMessage._id}`,
-        attempts: 10,
+        attempts: 3,
         backoff: {
           type: "exponential",
           delay: 1000,
@@ -128,7 +128,7 @@ export const createMessage = async (userId, conversationId, messageData) => {
   return message;
 };
 
-export const getMessage = async (userId, conversationId) => {
+export const getMessage = async (userId, conversationId, limit = 20, cursor = null) => {
   const conversation = await Conversation.findOne({
     _id: conversationId,
     user: userId,
@@ -138,13 +138,38 @@ export const getMessage = async (userId, conversationId) => {
     throw new AppError("Conversation not found", 404);
   }
 
-  const messages = await Message.find({
+  const query = {
     conversation: conversationId,
-  }).sort({
-    createdAt: 1,
-  });
+  };
 
-  return messages;
+  if (cursor) {
+    query._id = {
+      $gt: cursor,
+    };
+  }
+
+  const messages = await Message.find(query)
+    .sort({
+      _id: 1,
+    })
+    .limit(limit + 1);
+
+  const hasMore = messages.length > limit;
+
+  if (hasMore) {
+    messages.pop();
+  }
+
+  const nextCursor = hasMore ? messages[messages.length - 1]._id.toString() : null;
+
+  return {
+    messages,
+    pagination: {
+      limit,
+      nextCursor,
+      hasMore,
+    },
+  };
 };
 
 export const updateMessage = async (userId, conversationId, messageId, messageData) => {

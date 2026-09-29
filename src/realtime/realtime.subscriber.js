@@ -12,9 +12,15 @@ subscriber.on("error", (error) => {
 await subscriber.connect();
 
 export const subscribeToRealtimeEvents = async (callback) => {
-  await subscriber.subscribe("ai:Response", (message) => {
+  await subscriber.subscribe("ai:response", (message) => {
     const data = JSON.parse(message);
 
     callback("ai:response", data);
+  });
+
+  await subscriber.subscribe("ai:error", (message) => {
+    const data = JSON.parse(message);
+
+    callback("ai:error", data);
   });
 };

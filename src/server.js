@@ -30,8 +30,16 @@ const startServer = async () => {
     app.set("io", io);
 
     await subscribeToRealtimeEvents((event, data) => {
-      if (event === "ai:Response") {
-        io.to(`conversation:${data.conversationId}`).emit("ai:Response", data.message);
+      if (event === "ai:response") {
+        io.to(`conversation:${data.conversationId}`).emit("ai:response", data.message);
+      }
+
+      if (event === "ai:error") {
+        io.to(`conversation:${data.conversationId}`).emit("ai:error", data);
+      }
+
+      if (event === "message:new") {
+        io.to(`conversation:${data.conversationId}`).emit("message:new", data.userMessage);
       }
     });
 
