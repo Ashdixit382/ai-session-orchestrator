@@ -12,7 +12,7 @@ const isRetryableOpenAIError = (error) => {
 
   if (!status) {
     return true;
-  }
+  }``
 
   return false;
 };

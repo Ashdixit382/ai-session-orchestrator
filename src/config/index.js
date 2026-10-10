@@ -16,6 +16,7 @@ const env = {
   CLIENT_URL: process.env.CLIENT_URL,
   LOG_LEVEL: process.env.LOG_LEVEL,
   REDIS_URL: process.env.REDIS_URL,
+  AI_FALLBACK_PROVIDER: process.env.AI_FALLBACK_PROVIDER,
 };
 
 const missing = Object.entries(env)
@@ -49,6 +50,7 @@ const config = {
   clientUrl: env.CLIENT_URL,
   logLevel: env.LOG_LEVEL,
   redisUrl: env.REDIS_URL,
+  aiFallbackProvider: env.AI_FALLBACK_PROVIDER,
 };
 
 export default config;

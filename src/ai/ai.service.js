@@ -1,10 +1,9 @@
 import Conversation from "../conversations/conversation.model.js";
 import { AppError } from "../utils/AppError.js";
 import Message from "../message/message.model.js";
-import { getAIProvider } from "../provider/provider.factory.js";
-import config from "../config/index.js";
 import { buildConversationContext } from "./context.service.js";
 import { conversationTitleSchema } from "./ai.schema.js";
+import { generateWithFallback, generateTitleWithFallback } from "../provider/fallback.service.js";
 
 export const generateAIResponse = async (userId, conversationId, messageId, sequence) => {
   const exist = await Conversation.findOne({
@@ -28,9 +27,7 @@ export const generateAIResponse = async (userId, conversationId, messageId, sequ
 
   const providerMessages = await buildConversationContext(conversationId, messageId);
 
-  const provider = getAIProvider(config.aiProvider);
-
-  const response = await provider.generateResponse(providerMessages);
+  const response = await generateWithFallback(providerMessages);
 
   try {
     const assistantMessage = await Message.create({
@@ -60,9 +57,7 @@ export const generateAIResponse = async (userId, conversationId, messageId, sequ
 };
 
 export const generateConversationTitle = async (content) => {
-  const provider = getAIProvider(config.aiProvider);
-
-  const response = await provider.generateTitle(content);
+  const response = await generateTitleWithFallback(content);
 
   const title = response.content.trim();
 
